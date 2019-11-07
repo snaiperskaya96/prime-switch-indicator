@@ -1,0 +1,12 @@
+[Unit]
+Description=NVIDIA Prime indicator
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=/usr/bin/prime-switch-indicator
+
+[Install]
+WantedBy=default.target
