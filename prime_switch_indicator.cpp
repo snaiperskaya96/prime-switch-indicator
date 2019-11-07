@@ -1,6 +1,6 @@
+#include <fstream>
 #include <gtk/gtk.h>
 #include <libappindicator/app-indicator.h>
-#include <fstream>
 
 typedef void (*VoiceActivated_t)(GtkWidget *widget, gpointer data);
 
@@ -35,22 +35,16 @@ static void onRestartAlert(GtkDialog *dialog, gint response_id, gpointer user_da
 
 static void restartAlert()
 {
-  GtkWidget *dialog, *label, *content_area;
-  GtkDialogFlags flags;
+  GtkWidget* dialog = nullptr;
+  GtkWidget* label = nullptr;
+  GtkWidget* contentArea = nullptr;
 
-  // Create the widgets
-  flags = GTK_DIALOG_DESTROY_WITH_PARENT;
-  dialog = gtk_dialog_new_with_buttons ("You should restart.", nullptr, flags, "_OK", GTK_RESPONSE_ACCEPT, "_Cancel", GTK_RESPONSE_REJECT, NULL);
-
-  content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+  dialog = gtk_dialog_new_with_buttons ("You should restart.", nullptr, GTK_DIALOG_DESTROY_WITH_PARENT, "_OK", GTK_RESPONSE_ACCEPT, "_Cancel", GTK_RESPONSE_REJECT, NULL);
+  contentArea = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
   label = gtk_label_new ("You need to restart to make the switch effective. Do you want me to do it for you?");
 
-  g_signal_connect_swapped (dialog,
-                            "response",
-                            G_CALLBACK (&onRestartAlert),
-                            dialog);
-
-  gtk_container_add (GTK_CONTAINER (content_area), label);
+  g_signal_connect_swapped (dialog, "response", G_CALLBACK(&onRestartAlert), dialog);
+  gtk_container_add (GTK_CONTAINER(contentArea), label);
   gtk_widget_show_all (dialog);
 }
 
@@ -129,19 +123,17 @@ static void onClick(GtkWidget *widget, gpointer data)
 
 static GtkWidget* setupVoice(const char* voiceName, VoiceActivated_t callback, GtkWidget* menu)
 {
-    GtkWidget* menuItem1 = gtk_image_menu_item_new_with_label(voiceName);
-    gtk_widget_add_events(menuItem1, GDK_BUTTON_PRESS_MASK);
-    g_signal_connect (menuItem1, "activate", G_CALLBACK (callback), NULL);
-    gtk_menu_shell_insert(GTK_MENU_SHELL(menu), menuItem1, 0);
-    gtk_widget_show(menuItem1);
-    return menuItem1;
+    GtkWidget* item = gtk_menu_item_new_with_label(voiceName);
+    gtk_widget_add_events(item, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect (item, "activate", G_CALLBACK (callback), NULL);
+    gtk_menu_shell_insert(GTK_MENU_SHELL(menu), item, 0);
+    gtk_widget_show(item);
+    return item;
 }
 
-int main (int argc, char **argv)
+int main (int argc, char** argv)
 {
-    GtkWidget* indicator_menu = nullptr;
-    GtkWidget* menuItem1 = nullptr;
-
+    GtkWidget* indicatorMenu = nullptr;
     AppIndicator* indicator = nullptr;
     GError* error = nullptr;
 
@@ -151,11 +143,11 @@ int main (int argc, char **argv)
     app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
     app_indicator_set_icon(indicator, "/usr/share/icons/prime-switch-indicator/indicator.png");
 
-    indicator_menu = gtk_menu_new();
-    quit = setupVoice("Quit", &onClick, indicator_menu);
-    switchToIntel = setupVoice("Switch to Intel", &onClick, indicator_menu);
-    switchToNvidia = setupVoice("Switch to Nvidia", &onClick, indicator_menu);
-    app_indicator_set_menu(indicator, GTK_MENU(indicator_menu));
+    indicatorMenu = gtk_menu_new();
+    quit = setupVoice("Quit", &onClick, indicatorMenu);
+    switchToIntel = setupVoice("Switch to Intel", &onClick, indicatorMenu);
+    switchToNvidia = setupVoice("Switch to Nvidia", &onClick, indicatorMenu);
+    app_indicator_set_menu(indicator, GTK_MENU(indicatorMenu));
     updateVoices();
 
     gtk_main();
